@@ -1,21 +1,29 @@
-const db = require('../db/index');
-const analysisService = require('../services/analysisService');
+const db = require("../db/index");
+const analysisService = require("../services/analysisService");
 
 class ResumeController {
   async uploadResume(req, res) {
     try {
       if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const allowedMimeTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const allowedMimeTypes = [
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
 
       if (!allowedMimeTypes.includes(req.file.mimetype)) {
-        return res.status(400).json({ error: 'Only PDF and DOCX files are allowed' });
+        return res
+          .status(400)
+          .json({ error: "Only PDF and DOCX files are allowed" });
       }
 
       // Process the resume
-      const result = await analysisService.processResume(req.file.buffer, req.file.originalname);
+      const result = await analysisService.processResume(
+        req.file.buffer,
+        req.file.originalname
+      );
       const analysisData = result.analysisData;
       // Save to database
       const query = `
@@ -42,31 +50,33 @@ class ResumeController {
         JSON.stringify(analysisData.certifications || []),
         analysisData.resume_rating || null,
         analysisData.improvement_areas || null,
-        JSON.stringify(analysisData.upskill_suggestions || [])
+        JSON.stringify(analysisData.upskill_suggestions || []),
       ];
 
       const [dbResult] = await db.execute(query, values);
       const resumeId = dbResult.insertId;
 
       // Get the uploaded timestamp
-      const [timestampResult] = await db.execute('SELECT uploaded_at FROM resumes WHERE id = ?', [resumeId]);
+      const [timestampResult] = await db.execute(
+        "SELECT uploaded_at FROM resumes WHERE id = ?",
+        [resumeId]
+      );
 
       res.status(201).json({
         success: true,
-        message: 'Resume analyzed and saved successfully',
+        message: "Resume analyzed and saved successfully",
         data: {
           id: resumeId,
           fileName: result.fileName,
           uploadedAt: timestampResult[0].uploaded_at,
-          analysis: analysisData
-        }
+          analysis: analysisData,
+        },
       });
-
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
       res.status(500).json({
-        error: 'Failed to process resume',
-        details: error.message
+        error: "Failed to process resume",
+        details: error.message,
       });
     }
   }
@@ -80,17 +90,16 @@ class ResumeController {
       `;
 
       const [result] = await db.execute(query);
-      
+
       res.json({
         success: true,
-        data: result
+        data: result,
       });
-
     } catch (error) {
-      console.error('Get all resumes error:', error);
+      console.error("Get all resumes error:", error);
       res.status(500).json({
-        error: 'Failed to fetch resumes',
-        details: error.message
+        error: "Failed to fetch resumes",
+        details: error.message,
       });
     }
   }
@@ -98,43 +107,50 @@ class ResumeController {
   async getResumeById(req, res) {
     try {
       const { id } = req.params;
-      
+
       const query = `
         SELECT * FROM resumes WHERE id = ?
       `;
 
       const [result] = await db.execute(query, [id]);
-      
+
       if (result.length === 0) {
         return res.status(404).json({
-          error: 'Resume not found'
+          error: "Resume not found",
         });
       }
 
       const resume = result[0];
-      
+
       // Parse JSON fields
       const processedResume = {
         ...resume,
-        work_experience: resume.work_experience ? JSON.parse(resume.work_experience) : [],
+        work_experience: resume.work_experience
+          ? JSON.parse(resume.work_experience)
+          : [],
         education: resume.education ? JSON.parse(resume.education) : [],
-        technical_skills: resume.technical_skills ? JSON.parse(resume.technical_skills) : [],
+        technical_skills: resume.technical_skills
+          ? JSON.parse(resume.technical_skills)
+          : [],
         soft_skills: resume.soft_skills ? JSON.parse(resume.soft_skills) : [],
         projects: resume.projects ? JSON.parse(resume.projects) : [],
-        certifications: resume.certifications ? JSON.parse(resume.certifications) : [],
-        upskill_suggestions: resume.upskill_suggestions ? JSON.parse(resume.upskill_suggestions) : []
+        certifications: resume.certifications
+          ? JSON.parse(resume.certifications)
+          : [],
+        upskill_suggestions: resume.upskill_suggestions
+          ? JSON.parse(resume.upskill_suggestions)
+          : [],
       };
 
       res.json({
         success: true,
-        data: processedResume
+        data: processedResume,
       });
-
     } catch (error) {
-      console.error('Get resume by ID error:', error);
+      console.error("Get resume by ID error:", error);
       res.status(500).json({
-        error: 'Failed to fetch resume',
-        details: error.message
+        error: "Failed to fetch resume",
+        details: error.message,
       });
     }
   }
@@ -142,36 +158,46 @@ class ResumeController {
   async improveResume(req, res) {
     try {
       const { id } = req.params;
-      
+
       // Get the current resume data
       const query = `
         SELECT * FROM resumes WHERE id = ?
       `;
 
       const [result] = await db.execute(query, [id]);
-      
+
       if (result.length === 0) {
         return res.status(404).json({
-          error: 'Resume not found'
+          error: "Resume not found",
         });
       }
 
       const resume = result[0];
-      
+
       // Parse JSON fields
       const currentData = {
         ...resume,
-        work_experience: resume.work_experience ? JSON.parse(resume.work_experience) : [],
+        work_experience: resume.work_experience
+          ? JSON.parse(resume.work_experience)
+          : [],
         education: resume.education ? JSON.parse(resume.education) : [],
-        technical_skills: resume.technical_skills ? JSON.parse(resume.technical_skills) : [],
+        technical_skills: resume.technical_skills
+          ? JSON.parse(resume.technical_skills)
+          : [],
         soft_skills: resume.soft_skills ? JSON.parse(resume.soft_skills) : [],
         projects: resume.projects ? JSON.parse(resume.projects) : [],
-        certifications: resume.certifications ? JSON.parse(resume.certifications) : [],
-        upskill_suggestions: resume.upskill_suggestions ? JSON.parse(resume.upskill_suggestions) : []
+        certifications: resume.certifications
+          ? JSON.parse(resume.certifications)
+          : [],
+        upskill_suggestions: resume.upskill_suggestions
+          ? JSON.parse(resume.upskill_suggestions)
+          : [],
       };
 
       // Use the analysis service to improve the resume
-      const improvedData = await analysisService.improveResumeContent(currentData);
+      const improvedData = await analysisService.improveResumeContent(
+        currentData
+      );
 
       // Update the database with improved content
       const updateQuery = `
@@ -191,31 +217,38 @@ class ResumeController {
 
       const updateValues = [
         improvedData.summary || currentData.summary,
-        JSON.stringify(improvedData.work_experience || currentData.work_experience),
+        JSON.stringify(
+          improvedData.work_experience || currentData.work_experience
+        ),
         JSON.stringify(improvedData.education || currentData.education),
-        JSON.stringify(improvedData.technical_skills || currentData.technical_skills),
+        JSON.stringify(
+          improvedData.technical_skills || currentData.technical_skills
+        ),
         JSON.stringify(improvedData.soft_skills || currentData.soft_skills),
         JSON.stringify(improvedData.projects || currentData.projects),
-        JSON.stringify(improvedData.certifications || currentData.certifications),
+        JSON.stringify(
+          improvedData.certifications || currentData.certifications
+        ),
         improvedData.resume_rating || currentData.resume_rating,
         improvedData.improvement_areas || currentData.improvement_areas,
-        JSON.stringify(improvedData.upskill_suggestions || currentData.upskill_suggestions),
-        id
+        JSON.stringify(
+          improvedData.upskill_suggestions || currentData.upskill_suggestions
+        ),
+        id,
       ];
 
       await db.execute(updateQuery, updateValues);
 
       res.json({
         success: true,
-        message: 'Resume improved successfully',
-        data: improvedData
+        message: "Resume improved successfully",
+        data: improvedData,
       });
-
     } catch (error) {
-      console.error('Improve resume error:', error);
+      console.error("Improve resume error:", error);
       res.status(500).json({
-        error: 'Failed to improve resume',
-        details: error.message
+        error: "Failed to improve resume",
+        details: error.message,
       });
     }
   }
@@ -223,13 +256,16 @@ class ResumeController {
   async deleteResume(req, res) {
     try {
       const { id } = req.params;
-      
+
       // Check if resume exists
-      const [existingResume] = await db.execute('SELECT id FROM resumes WHERE id = ?', [id]);
-      
+      const [existingResume] = await db.execute(
+        "SELECT id FROM resumes WHERE id = ?",
+        [id]
+      );
+
       if (existingResume.length === 0) {
         return res.status(404).json({
-          error: 'Resume not found'
+          error: "Resume not found",
         });
       }
 
@@ -239,20 +275,19 @@ class ResumeController {
 
       if (result.affectedRows === 0) {
         return res.status(404).json({
-          error: 'Resume not found or already deleted'
+          error: "Resume not found or already deleted",
         });
       }
 
       res.json({
         success: true,
-        message: 'Resume deleted successfully'
+        message: "Resume deleted successfully",
       });
-
     } catch (error) {
-      console.error('Delete resume error:', error);
+      console.error("Delete resume error:", error);
       res.status(500).json({
-        error: 'Failed to delete resume',
-        details: error.message
+        error: "Failed to delete resume",
+        details: error.message,
       });
     }
   }
