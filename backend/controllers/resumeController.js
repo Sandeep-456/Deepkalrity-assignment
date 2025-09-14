@@ -1,6 +1,16 @@
 const db = require("../db/index");
 const analysisService = require("../services/analysisService");
 
+// Helper function to safely parse JSON
+const safeJSONParse = (data) => {
+  try {
+    return JSON.parse(data);
+  } catch (error) {
+    return []; // Return empty array on parsing error
+  }
+};
+
+
 class ResumeController {
   async uploadResume(req, res) {
     try {
@@ -125,21 +135,13 @@ class ResumeController {
       // Parse JSON fields
       const processedResume = {
         ...resume,
-        work_experience: resume.work_experience
-          ? JSON.parse(resume.work_experience)
-          : [],
-        education: resume.education ? JSON.parse(resume.education) : [],
-        technical_skills: resume.technical_skills
-          ? JSON.parse(resume.technical_skills)
-          : [],
-        soft_skills: resume.soft_skills ? JSON.parse(resume.soft_skills) : [],
-        projects: resume.projects ? JSON.parse(resume.projects) : [],
-        certifications: resume.certifications
-          ? JSON.parse(resume.certifications)
-          : [],
-        upskill_suggestions: resume.upskill_suggestions
-          ? JSON.parse(resume.upskill_suggestions)
-          : [],
+        work_experience: safeJSONParse(resume.work_experience),
+        education: safeJSONParse(resume.education),
+        technical_skills: safeJSONParse(resume.technical_skills),
+        soft_skills: safeJSONParse(resume.soft_skills),
+        projects: safeJSONParse(resume.projects),
+        certifications: safeJSONParse(resume.certifications),
+        upskill_suggestions: safeJSONParse(resume.upskill_suggestions),
       };
 
       res.json({
@@ -177,21 +179,13 @@ class ResumeController {
       // Parse JSON fields
       const currentData = {
         ...resume,
-        work_experience: resume.work_experience
-          ? JSON.parse(resume.work_experience)
-          : [],
-        education: resume.education ? JSON.parse(resume.education) : [],
-        technical_skills: resume.technical_skills
-          ? JSON.parse(resume.technical_skills)
-          : [],
-        soft_skills: resume.soft_skills ? JSON.parse(resume.soft_skills) : [],
-        projects: resume.projects ? JSON.parse(resume.projects) : [],
-        certifications: resume.certifications
-          ? JSON.parse(resume.certifications)
-          : [],
-        upskill_suggestions: resume.upskill_suggestions
-          ? JSON.parse(resume.upskill_suggestions)
-          : [],
+        work_experience: safeJSONParse(resume.work_experience),
+        education: safeJSONParse(resume.education),
+        technical_skills: safeJSONParse(resume.technical_skills),
+        soft_skills: safeJSONParse(resume.soft_skills),
+        projects: safeJSONParse(resume.projects),
+        certifications: safeJSONParse(resume.certifications),
+        upskill_suggestions: safeJSONParse(resume.upskill_suggestions),
       };
 
       // Use the analysis service to improve the resume

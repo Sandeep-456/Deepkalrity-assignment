@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { resumeAPI } from '../services/api';
 import { toast } from 'react-toastify';
-import { FaHistory, FaFileAlt, FaStar, FaRedo, FaTrash} from 'react-icons/fa';
-import { FaX } from "react-icons/fa6";
+import { FaHistory, FaFileAlt, FaStar, FaRedo, FaTrash } from 'react-icons/fa';
+import { FaX } from 'react-icons/fa6';
 import ResumeDetails from './ResumeDetails';
 
 const PastResumesTable = () => {

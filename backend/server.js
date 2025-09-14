@@ -9,15 +9,28 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(
-  cors({
-    origin: [
-      "https://deepkalrity-assignment-frontend.vercel.app",
-      "http://localhost:5173",
-    ],
-    credentials: true,
-  })
-);
+const allowedOrigins = [
+  "https://deepkalrity-assignment-frontend.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:5000",
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (process.env.NODE_ENV === "development" || !origin) {
+      // Allow all origins in development, and non-browser requests (e.g. curl)
+      callback(null, true);
+    } else if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -45,10 +58,10 @@ app.use((error, req, res, next) => {
     });
   }
 
-  if (error.message === "Only PDF files are allowed") {
+  if (error.message === "Only PDF, DOC, and DOCX files are allowed") {
     return res.status(400).json({
       error: "Invalid file type",
-      details: "Only PDF files are allowed",
+      details: "Only PDF, DOC, and DOCX files are allowed",
     });
   }
 

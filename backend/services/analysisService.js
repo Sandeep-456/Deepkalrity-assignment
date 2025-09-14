@@ -185,18 +185,23 @@ class AnalysisService {
         }
       `;
 
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      try {
+        const result = await this.model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
 
-      // Clean the response to extract JSON
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error("No valid JSON found in Gemini response");
+        // Clean the response to extract JSON
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error("No valid JSON found in Gemini response");
+        }
+
+        const improvedData = JSON.parse(jsonMatch[0]);
+        return improvedData;
+      } catch (error) {
+        console.error("Gemini API Error:", error);
+        throw new Error(`Resume improvement failed: ${error.message}`);
       }
-
-      const improvedData = JSON.parse(jsonMatch[0]);
-      return improvedData;
     } catch (error) {
       throw new Error(`Resume improvement failed: ${error.message}`);
     }
