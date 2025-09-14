@@ -252,7 +252,7 @@ Get detailed analysis of a specific resume.
 
 ### File Upload Limits
 - Maximum file size: 10MB
-- Allowed file types: PDF only
+- Allowed file types: PDF and Word
 - Supported formats: PDF documents
 
 ## 🧪 Testing
@@ -279,7 +279,7 @@ The application includes comprehensive error handling for:
 
 ## 🔒 Security Considerations
 
-- File type validation (PDF only)
+- File type validation
 - File size limits (10MB max)
 - CORS configuration for frontend-backend communication
 - Environment variables for sensitive data
@@ -295,18 +295,6 @@ The application includes comprehensive error handling for:
 4. **Build**: Run `npm run build` in the frontend directory
 5. **Server**: Use PM2 or similar for process management
 
-### Docker Deployment (Optional)
-
-```dockerfile
-# Backend Dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-EXPOSE 5000
-CMD ["npm", "start"]
-```
 
 ## 🤝 Contributing
 
